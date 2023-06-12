@@ -1,0 +1,193 @@
+import speech_recognition as sr
+import serial
+import pyttsx3
+
+# Initialize the text-to-speech engine
+engine = pyttsx3.init()
+voices = engine.getProperty('voices')
+voice = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN-US_ZIRA_11.0'  # Sets the female voice & can be changed also
+engine.setProperty('voice', voice)
+
+# Initialize the serial connection to the Arduino
+ser = serial.Serial('COM4', 9600)
+
+# Initialize the speech recognition engine
+r = sr.Recognizer()
+mic = sr.Microphone()
+
+# Define a function to send a command to the Arduino
+def send_command(cmd):
+    ser.write(cmd.encode())
+
+# Define the voice commands
+# Speech recognitiion sometimes fails to recognise the actual sentence thus some sentences with which the recogniser replaces the actual sentence is also included in the list 
+Assistant_call = ["hey ab", "hey baby","Abhi"]
+device_on_cmd1 = ["turn on LED", "turn on ladies","on LED","anon LED","Pan of LED"]
+device_off_cmd1 = ["turn off LED","turn off ladies","off LED","LED"]
+device_on_cmd2 = ["turn on charging port","on charging port"]
+device_off_cmd2 = ["turn off charging port","off charging port","and off charging port","charging port","port"]
+device_on_cmd3 = ["turn on lights","turn on light"]
+device_off_cmd3 = ["turn off lights","turn off light","off light","off lights"]
+device_on_cmd4 = ["turn on balcony light"]
+device_off_cmd4 = ["turn off balcony light"]
+device_on_cmd5 = ["turn on fan"]
+device_off_cmd5 = ["turn off fan"]
+device_forward_cmd6 = ["forward the dustbin","dustbin","forward"]
+device_backward_cmd6 = ["backward the dustbin","backward"]
+regulator_0_cmd7 = ["set fan speed 20","set fan speed to 0","set fan speed to zero ","regulate fan to zero"]
+regulator_1_cmd7 = ["set fan speed 21","set fan speed to 1","set fan speed to one ","regulate fan to one"]
+regulator_2_cmd7 = ["set fan speed 22","set fan speed to 2","set fan speed to two ","regulate fan to two"]
+regulator_3_cmd7 = ["set fan speed 23","set fan speed to 3","set fan speed to three ","regulate fan to three"]
+regulator_4_cmd7 = ["set fan speed 24","set fan speed to 4","set fan speed to four ","regulate fan to four"]
+regulator_5_cmd7 = ["set fan speed 25","set fan speed to 5","set fan speed to five ","regulate fan to five"]
+all_device_off_cmd = ["shut down all the appliances","turn off all the appliances","turn off all appliances","appliances"]
+a = 1 
+
+while True:
+    with mic as source:
+        print("Say your command:")
+        r.adjust_for_ambient_noise(source)
+        audio = r.listen(source)
+
+    try:
+        text = r.recognize_google(audio)
+        print('You said:', text)
+
+        if text in Assistant_call:
+            engine.say("Yes!")
+            engine.runAndWait()
+
+        elif text in device_on_cmd1:
+            send_command('a')
+            print('LEDs turned on!')
+            engine.say("LEDs turned on!")
+            engine.runAndWait()
+
+        elif text in device_off_cmd1:
+            send_command('b')
+            print('LEDs turned off!')
+            engine.say("LEDs turned off!")
+            engine.runAndWait()
+
+        elif text in device_on_cmd3:
+            send_command('i')
+            print('Lights turned on')
+            send_command('i')
+            print('Lights turned on')
+            engine.say("Lights turned on")
+            engine.runAndWait()
+
+        elif text in device_off_cmd3:
+            send_command('j')
+            print('Lights turned off')
+            engine.say("Lights turned off")
+            engine.runAndWait()
+
+        elif text in device_on_cmd5:
+            send_command('e')
+            print('Fan turned on!')
+            engine.say("Fan turned on!")
+            engine.runAndWait()
+
+        elif text in device_off_cmd5:
+            send_command('f')
+            print('Fan turned off!')
+            engine.say("Fan turned off!")
+            engine.runAndWait()
+
+        elif text in device_on_cmd2:
+            send_command('c')
+            print('Charging port turned on')
+            engine.say("Charging port turned on")
+            engine.runAndWait()
+
+        elif text in device_off_cmd2:
+            send_command('d')
+            print('Charging port turned off')
+            engine.say("Charging port turned off")
+            engine.runAndWait()
+
+        elif text in device_forward_cmd6:
+            while a == 1:
+                send_command('t')
+                print("Dustbin moving forward")
+                engine.say("Okay")
+                engine.runAndWait()
+                a += 1
+                break
+
+            while a == 2:
+                print("Dustbin is at its place")
+                break
+
+        elif text in device_backward_cmd6:
+            while a == 2:
+                send_command('s')
+                print('Dustbin moved backward')
+                engine.say("Okay")
+                engine.runAndWait()
+                a -= 1
+                break
+
+            while a == 1:
+                print("Dustbin is at its place")
+                break
+
+        elif text in regulator_0_cmd7:
+            send_command('x')
+            print("Set fan speed to zero")
+            engine.say("Okay")
+            engine.runAndWait()
+
+        elif text in regulator_1_cmd7:
+            send_command('y')
+            print("Set fan speed to one")
+            engine.say("Okay")
+            engine.runAndWait()
+
+        elif text in regulator_2_cmd7:
+            send_command('z')
+            print("Set fan speed to two")
+            engine.say("Okay")
+            engine.runAndWait()
+
+        elif text in regulator_3_cmd7:
+            send_command('p')
+            print("Set fan speed to three")
+            engine.say("Okay")
+            engine.runAndWait()
+
+        elif text in regulator_4_cmd7:
+            send_command('q')
+            print("Set fan speed to four")
+            engine.say("Okay")
+            engine.runAndWait()
+
+        elif text in regulator_5_cmd7:
+            send_command('r')
+            print("Set fan speed to five")
+            engine.say("Okay")
+            engine.runAndWait()
+
+        elif text in device_on_cmd4:
+            send_command('g')
+            print('Balcony light turned on!')
+            engine.say("Balcony light turned on!")
+            engine.runAndWait()
+
+        elif text in device_off_cmd4:
+            send_command('h')
+            print('Balcony light turned off!')
+            engine.say("Balcony light turned off!")
+            engine.runAndWait()
+
+        elif text in all_device_off_cmd:
+            send_command('k')
+            print("All appliances shut down!")
+            engine.say("All appliances shut down!")
+            engine.runAndWait()
+
+    except sr.UnknownValueError:
+        print('Sorry, could not understand your command.')
+    except sr.RequestError as e:
+        print('Sorry, could not request results from Google Speech Recognition:', e)
