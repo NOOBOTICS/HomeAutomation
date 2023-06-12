@@ -1,0 +1,83 @@
+#include <RH_ASK.h>
+#include <SPI.h>
+#include <Arduino.h>
+#include <string.h>
+#include <Stepper.h>
+
+#define SERVO_PIN 9
+#define SERVO_FREQ 50 // Hz
+#define MIN_ANGLE 0
+#define MAX_ANGLE 180
+#define MIN_PULSE_WIDTH 544 // microseconds
+#define MAX_PULSE_WIDTH 2400 // microseconds
+#define stepsPerRevolution 200 // change this to fit the number of steps per revolution of your motor
+#define motorPin1 2
+#define motorPin2 3
+#define motorPin3 4
+#define motorPin4 5
+
+// Initialize the stepper motor with the number of steps and motor pins
+Stepper myStepper(stepsPerRevolution, motorPin1, motorPin2, motorPin3, motorPin4);
+
+
+RH_ASK rf_driver;
+int count = 1; 
+
+void setup() {
+  rf_driver.init();
+  Serial.begin(9600);
+  pinMode(SERVO_PIN, OUTPUT);
+  digitalWrite(SERVO_PIN, LOW);
+  moveServo(0, SERVO_PIN);
+    myStepper.setSpeed(200); // in RPM
+}
+
+void loop() {
+  uint8_t buf[1];
+  uint8_t buflen = sizeof(buf);
+
+  if (rf_driver.recv(buf, &buflen)) {
+    Serial.print("Message received: ");
+    Serial.println((char*)buf);
+
+    if (strcmp((char*)buf, "t") == 0) {
+      
+      while(count =1){
+      // Move the servo to 40 degrees
+     myStepper.step(stepsPerRevolution*50);
+     Serial.println("Stepper Moved Forward");
+     count += 1;
+     break; 
+      }
+  // Delay for 1 second
+
+
+    }
+    ////////////
+    if (strcmp((char*)buf, "s") == 0) {
+      Serial.println("chutya!");
+
+     while(count =2){
+      // Move the servo to 90 degrees
+ myStepper.step(-stepsPerRevolution*50);
+ Serial.println("Stepper Moved Backwards");
+   count -=1; 
+
+    break; 
+
+     }}
+  }
+}
+
+void moveServo(int angle, int pin) {
+  // Map the angle to the pulse width range
+  int pulse_width = map(angle, MIN_ANGLE, MAX_ANGLE, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
+
+  // Generate the pulse on the servo pin
+  digitalWrite(pin, HIGH);
+  delayMicroseconds(pulse_width);
+  digitalWrite(pin, LOW);
+
+  // Delay to ensure the servo has time to move to the desired position
+  delay(20);
+}
