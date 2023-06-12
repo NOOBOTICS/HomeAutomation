@@ -1,0 +1,351 @@
+#include <RH_ASK.h>
+#include <SPI.h>
+#include <Stepper.h>
+
+const float steps_per_rev = 32;
+const float gear_reduction = 64;
+
+const float steps_per_output = steps_per_rev * gear_reduction;
+int steps_required, a, dest;
+int x1 = 950, y1 = 840, z1 = 730, p1 = 620, q1 = 510, r1 = 400;
+Stepper steppermotor(steps_per_rev, 2, 7, 4, 8);
+
+RH_ASK rf_driver;
+
+#define SERVO_PIN1 3
+#define SERVO_PIN2 5
+#define SERVO_PIN3 6
+#define SERVO_PIN4 9
+#define SERVO_PIN5 10
+
+
+#define SERVO_FREQ 50  // Hz
+#define MIN_ANGLE 0
+#define MAX_ANGLE 180
+#define MIN_PULSE_WIDTH 544   // microseconds
+#define MAX_PULSE_WIDTH 2400  // microseconds
+
+
+
+
+void setup() {
+  // Initialize the serial connection
+  Serial.begin(9600);
+
+  pinMode(A0, INPUT);
+
+  pinMode(SERVO_PIN1, OUTPUT);
+  // digitalWrite(SERVO_PIN1, LOW); // make sure the servo starts at the initial position
+  moveServo(0, SERVO_PIN1);
+
+
+  pinMode(SERVO_PIN2, OUTPUT);
+  // digitalWrite(SERVO_PIN2, LOW); // make sure the servo starts at the initial position
+  moveServo(65, SERVO_PIN2);
+
+
+  pinMode(SERVO_PIN3, OUTPUT);
+  // digitalWrite(SERVO_PIN3, LOW); // make sure the servo starts at the initial position
+  moveServo(65, SERVO_PIN3);
+
+  pinMode(SERVO_PIN4, OUTPUT);
+  // digitalWrite(SERVO_PIN4, LOW); // make sure the servo starts at the initial position
+  moveServo(0, SERVO_PIN4);
+
+  pinMode(SERVO_PIN5, OUTPUT);
+  // digitalWrite(SERVO_PIN5, LOW); // make sure the servo starts at the initial position
+  moveServo(0, SERVO_PIN5);
+
+
+
+  rf_driver.init();
+}
+
+void loop() {
+  // Wait for a command from the Python program
+
+  a = analogRead(A0);
+  Serial.println(a);
+  delay(100);
+
+  if (Serial.available()) {
+    char cmd = Serial.read();
+
+    // If the command is 't', turn on the LED
+    if (cmd == 'k') {
+
+      moveServo(0, SERVO_PIN1);
+      moveServo(65, SERVO_PIN2);
+      moveServo(65, SERVO_PIN3);
+      moveServo(0, SERVO_PIN4);
+      moveServo(0, SERVO_PIN5);
+
+      Serial.println("All appliances are Shutdown !");
+    }
+
+
+    if (cmd == 'a') {
+      moveServo(55, SERVO_PIN1);
+
+      Serial.println("Servo Pint 1 a");
+    }
+
+    if (cmd == 'b') {
+      moveServo(0, SERVO_PIN1);
+
+      Serial.println("Servo Pint 1 b");
+    }
+
+    if (cmd == 'c') {
+      moveServo(0, SERVO_PIN2);
+      Serial.println("Servo Pint 2 c");
+    }
+
+    if (cmd == 'd') {
+      moveServo(55, SERVO_PIN2);
+      Serial.println("Servo Pint 2 d");
+    }
+    //uyguyguyuvu
+
+    if (cmd == 'e') {
+      moveServo(20, SERVO_PIN3);
+      Serial.println("Servo Pint 3 e");
+    }
+
+    if (cmd == 'f') {
+      moveServo(65, SERVO_PIN3);
+      Serial.println("Servo Pint 3 f");
+    }
+
+    if (cmd == 'g') {
+      moveServo(40, SERVO_PIN4);
+      Serial.println("Servo Pint 4 g");
+    }
+
+    if (cmd == 'h') {
+      moveServo(0, SERVO_PIN4);
+      Serial.println("Servo Pint 4 h");
+    }
+
+    if (cmd == 'i') {
+      moveServo(40, SERVO_PIN5);
+      Serial.println("Servo Pint 5 i");
+    }
+
+    if (cmd == 'j') {
+      moveServo(0, SERVO_PIN5);
+      Serial.println("Servo Pint 5 j");
+    }
+
+
+
+
+    //Transmitter cmd 's' and 't' to send data to dustbin to go forward or backward
+
+
+
+    if (cmd == 's') {
+      const char *msg = "s";
+      Serial.println("Dustbin forward");
+      rf_driver.send((uint8_t *)msg, strlen(msg));
+      rf_driver.waitPacketSent();
+      delay(1000);
+    }
+
+    if (cmd == 't') {
+      const char *msg = "t";
+      Serial.println("Dustbin backward");
+      rf_driver.send((uint8_t *)msg, strlen(msg));
+      rf_driver.waitPacketSent();
+      delay(1000);
+    }
+
+    if (cmd == 'x') {
+      dest = x1;
+
+
+      while (a > (dest + 10)) {
+        Serial.println("Stepper motor will rotate in acw direction ");
+        steppermotor.setSpeed(1100);
+        steppermotor.step(-100);
+        a = analogRead(A0);
+        Serial.println(a);
+      }
+      while (a < (dest - 10)) {
+        Serial.println("Stepper motor will rotate in cw direction ");
+        steppermotor.setSpeed(1100);
+        steppermotor.step(100);
+        a = analogRead(A0);
+        Serial.println(a);
+      }
+
+      while (a > (dest - 10) && a < (dest + 10)) {
+        Serial.println("Stepper will stay at its position ");
+        steppermotor.setSpeed(100);
+        steppermotor.step(0);
+        a = analogRead(A0);
+        Serial.println(a);
+        break;
+      }
+    }
+
+    if (cmd == 'y') {
+      dest = y1;
+
+
+      while (a > (dest + 10)) {
+        Serial.println("Stepper motor will rotate in acw direction ");
+        steppermotor.setSpeed(1100);
+        steppermotor.step(-100);
+        a = analogRead(A0);
+        Serial.println(a);
+      }
+      while (a < (dest - 10)) {
+        Serial.println("Stepper motor will rotate in cw direction ");
+        steppermotor.setSpeed(1100);
+        steppermotor.step(100);
+        a = analogRead(A0);
+        Serial.println(a);
+      }
+
+      while (a > (dest - 10) && a < (dest + 10)) {
+        Serial.println("Stepper will stay at its position ");
+        steppermotor.setSpeed(100);
+        steppermotor.step(0);
+        a = analogRead(A0);
+        Serial.println(a);
+        break;
+      }
+    }
+    if (cmd == 'z') {
+      dest = z1;
+
+
+      while (a > (dest + 10)) {
+        Serial.println("Stepper motor will rotate in acw direction ");
+        steppermotor.setSpeed(1100);
+        steppermotor.step(-100);
+        a = analogRead(A0);
+        Serial.println(a);
+      }
+      while (a < (dest - 10)) {
+        Serial.println("Stepper motor will rotate in cw direction ");
+        steppermotor.setSpeed(1100);
+        steppermotor.step(100);
+        a = analogRead(A0);
+        Serial.println(a);
+      }
+
+      while (a > (dest - 10) && a < (dest + 10)) {
+        Serial.println("Stepper will stay at its position ");
+        steppermotor.setSpeed(100);
+        steppermotor.step(0);
+        a = analogRead(A0);
+        Serial.println(a);
+        break;
+      }
+    }
+
+    if (cmd == 'p') {
+      dest = p1;
+
+
+      while (a > (dest + 10)) {
+        Serial.println("Stepper motor will rotate in acw direction ");
+        steppermotor.setSpeed(1100);
+        steppermotor.step(-100);
+        a = analogRead(A0);
+        Serial.println(a);
+      }
+      while (a < (dest - 10)) {
+        Serial.println("Stepper motor will rotate in cw direction ");
+        steppermotor.setSpeed(1100);
+        steppermotor.step(100);
+        a = analogRead(A0);
+        Serial.println(a);
+      }
+
+      while (a > (dest - 10) && a < (dest + 10)) {
+        Serial.println("Stepper will stay at its position ");
+        steppermotor.setSpeed(100);
+        steppermotor.step(0);
+        a = analogRead(A0);
+        Serial.println(a);
+        break;
+      }
+    }
+
+    //juighiuhjhkjnhuihjbjhhuihkugiugi
+
+    if (cmd == 'q') {
+      dest = q1;
+
+
+      while (a > (dest + 10)) {
+        Serial.println("Stepper motor will rotate in acw direction ");
+        steppermotor.setSpeed(1100);
+        steppermotor.step(-100);
+        a = analogRead(A0);
+        Serial.println(a);
+      }
+      while (a < (dest - 10)) {
+        Serial.println("Stepper motor will rotate in cw direction ");
+        steppermotor.setSpeed(1100);
+        steppermotor.step(100);
+        a = analogRead(A0);
+        Serial.println(a);
+      }
+
+      while (a > (dest - 10) && a < (dest + 10)) {
+        Serial.println("Stepper will stay at its position ");
+        steppermotor.setSpeed(100);
+        steppermotor.step(0);
+        a = analogRead(A0);
+        Serial.println(a);
+        break;
+      }
+    }
+
+    if (cmd == 'r') {
+      dest = r1;
+
+
+      while (a > (dest + 10)) {
+        Serial.println("Stepper motor will rotate in acw direction ");
+        steppermotor.setSpeed(1100);
+        steppermotor.step(-100);
+        a = analogRead(A0);
+        Serial.println(a);
+      }
+      while (a < (dest - 10)) {
+        Serial.println("Stepper motor will rotate in cw direction ");
+        steppermotor.setSpeed(1100);
+        steppermotor.step(100);
+        a = analogRead(A0);
+        Serial.println(a);
+      }
+
+      while (a > (dest - 10) && a < (dest + 10)) {
+        Serial.println("Stepper will stay at its position ");
+        steppermotor.setSpeed(100);
+        steppermotor.step(0);
+        a = analogRead(A0);
+        Serial.println(a);
+        break; 
+      }
+    }
+  }
+}
+
+void moveServo(int angle, int pin) {
+  // Map the angle to the pulse width range
+  int pulse_width = map(angle, MIN_ANGLE, MAX_ANGLE, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
+
+  // Generate the pulse on the servo pin
+  digitalWrite(pin, HIGH);
+  delayMicroseconds(pulse_width);
+  digitalWrite(pin, LOW);
+
+  // Delay to ensure the servo has time to move to the desired position
+  delay(20);
+}
